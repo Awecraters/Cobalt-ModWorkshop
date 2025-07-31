@@ -1,6 +1,0 @@
-{
-  "name": "InvertScreen",
-  "author": "Charles",
-  "description": "Inverts all screen colors using CSS filters.",
-  "code": "function InvertScreen() {\n  const invertStyle = document.createElement('style');\n  invertStyle.id = 'invert-screen-style';\n  invertStyle.textContent = `\n    html {\n      filter: invert(1) hue-rotate(180deg) !important;\n    }\n  `;\n  document.head.appendChild(invertStyle);\n}\n\nfunction InvertScreen_stop() {\n  const style = document.getElementById('invert-screen-style');\n  if (style) style.remove();\n}"
-}
