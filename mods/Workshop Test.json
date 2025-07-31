@@ -1,6 +1,6 @@
 {
-  "name": "GreenFlash",
-  "author": "Bob",
-  "description": "Flashes the screen green when activated.",
+  "name": "Workshop Test",
+  "author": "Cobalt Official",
+  "description": "Flashes the screen green when activated, To test the workshop downloading features.",
   "code": "(function() {\n  const flash = document.createElement('div');\n  flash.style.position = 'fixed';\n  flash.style.top = '0';\n  flash.style.left = '0';\n  flash.style.width = '100vw';\n  flash.style.height = '100vh';\n  flash.style.backgroundColor = 'limegreen';\n  flash.style.zIndex = '999999';\n  flash.style.pointerEvents = 'none';\n  document.body.appendChild(flash);\n  setTimeout(() => flash.remove(), 300);\n})();"
 }
