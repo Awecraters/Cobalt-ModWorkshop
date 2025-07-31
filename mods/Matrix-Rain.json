@@ -1,46 +1,6 @@
 {
-  "name": "Matrix Rain",
-  "author": "Awecraters",
+  "name": "MatrixRain",
+  "author": "Charles",
   "description": "A digital rain effect inspired by The Matrix.",
-  "code": "function MatrixRain() {
-const canvas = document.createElement('canvas');
-canvas.id = 'matrix-rain';
-canvas.style.position = 'fixed';
-canvas.style.top = '0';
-canvas.style.left = '0';
-canvas.style.width = '100%';
-canvas.style.height = '100%';
-canvas.style.zIndex = '9999';
-canvas.style.pointerEvents = 'none';
-document.body.appendChild(canvas);
-
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const letters = 'アァイィウヴエェオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモヤユヨラリルレロワヲンABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-const fontSize = 14;
-const columns = canvas.width / fontSize;
-const drops = Array(Math.floor(columns)).fill(1);
-
-function draw() {
-ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-ctx.fillStyle = '#0F0';
-ctx.font = fontSize + 'px monospace';
-for (let i = 0; i < drops.length; i++) {
-const text = letters.charAt(Math.floor(Math.random() * letters.length));
-ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-drops[i] = drops[i] * fontSize > canvas.height || Math.random() > 0.975 ? 0 : drops[i] + 1;
-}
-}
-
-window.MatrixRainInterval = setInterval(draw, 50);
-}
-
-function MatrixRain_stop() {
-clearInterval(window.MatrixRainInterval);
-const canvas = document.getElementById('matrix-rain');
-if (canvas) canvas.remove();
-}"
+  "code": "function MatrixRain() {\n  const canvas = document.createElement('canvas');\n  canvas.id = 'matrix-rain';\n  canvas.style.position = 'fixed';\n  canvas.style.top = '0';\n  canvas.style.left = '0';\n  canvas.style.width = '100%';\n  canvas.style.height = '100%';\n  canvas.style.zIndex = '9999';\n  canvas.style.pointerEvents = 'none';\n  document.body.appendChild(canvas);\n\n  const ctx = canvas.getContext('2d');\n  canvas.width = window.innerWidth;\n  canvas.height = window.innerHeight;\n\n  const letters = 'アァイィウヴエェオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモヤユヨラリルレロワヲンABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';\n  const fontSize = 14;\n  const columns = canvas.width / fontSize;\n  const drops = Array(Math.floor(columns)).fill(1);\n\n  function draw() {\n    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n    ctx.fillStyle = '#0F0';\n    ctx.font = fontSize + 'px monospace';\n    for (let i = 0; i < drops.length; i++) {\n      const text = letters.charAt(Math.floor(Math.random() * letters.length));\n      ctx.fillText(text, i * fontSize, drops[i] * fontSize);\n      drops[i] = drops[i] * fontSize > canvas.height || Math.random() > 0.975 ? 0 : drops[i] + 1;\n    }\n  }\n\n  window.MatrixRainInterval = setInterval(draw, 50);\n}\n\nfunction MatrixRain_stop() {\n  clearInterval(window.MatrixRainInterval);\n  const canvas = document.getElementById('matrix-rain');\n  if (canvas) canvas.remove();\n}"
 }
