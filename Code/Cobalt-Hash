@@ -1,0 +1,345 @@
+(function () {
+  const style = document.createElement('style');
+  style.textContent = `
+    #cobalt-button {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background-color: #0078D7;
+      color: white;
+      font-weight: bold;
+      font-size: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      user-select: none;
+      z-index: 2147483647;
+    }
+
+    #cobalt-sidebar {
+      position: fixed !important;
+      top: 0 !important;
+      right: 0;
+      width: 350px;
+      height: 100vh !important;
+      background-color: #1e1e1e;
+      color: white;
+      overflow-y: auto;
+      font-family: sans-serif;
+      transition: right 0.4s ease, width 0.4s ease;
+      z-index: 2147483646 !important;
+    }
+
+    #cobalt-sidebar.visible {
+      right: 0 !important;
+    }
+
+    #cobalt-sidebar.fullscreen {
+      width: 100vw;
+    }
+
+    #cobalt-sidebar.hidden-sidebar {
+      right: -400px !important;
+    }
+
+    #cobalt-sidebar.hidden-fullscreen {
+      right: -100vw !important;
+    }
+
+    #cobalt-tabs {
+      display: flex;
+      border-bottom: 1px solid #444;
+    }
+
+    .cobalt-tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      background-color: #2e2e2e;
+    }
+
+    .cobalt-tab.active {
+      background-color: #0078D7;
+    }
+
+    .cobalt-tab-content {
+      display: none;
+      padding: 10px;
+    }
+
+    .cobalt-tab-content.active {
+      display: block;
+    }
+
+    .mod-card {
+      background-color: #2e2e2e;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .mod-card button {
+      margin-right: 5px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+
+    .toggle-switch input {
+      display: none;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0;
+      right: 0; bottom: 0;
+      background-color: #ccc;
+      border-radius: 20px;
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .4s;
+    }
+
+    input:checked + .slider {
+      background-color: #0078D7;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    .cobalt-theme-default { background-color: #1e1e1e; color: white; }
+    .cobalt-theme-dark { background-color: #000; color: #ccc; }
+    .cobalt-theme-neon { background-color: #0f0; color: #000; }
+  `;
+  document.head.appendChild(style);
+
+  document.documentElement.style.overflow = 'visible';
+  document.body.style.overflow = 'visible';
+
+  const button = document.createElement('div');
+  button.id = 'cobalt-button';
+  button.textContent = 'C';
+  document.body.appendChild(button);
+
+  const sidebar = document.createElement('div');
+  sidebar.id = 'cobalt-sidebar';
+  sidebar.classList.add('cobalt-theme-default', 'hidden-sidebar');
+  sidebar.innerHTML = `
+    <div id="cobalt-tabs">
+      <div class="cobalt-tab active" data-tab="mods">Mods</div>
+      <div class="cobalt-tab" data-tab="settings">Settings</div>
+      <div class="cobalt-tab" data-tab="workshop">Workshop</div>
+    </div>
+    <div id="mods" class="cobalt-tab-content active"></div>
+    <div id="settings" class="cobalt-tab-content">
+      <label>Enable Logging:
+        <label class="toggle-switch">
+          <input type="checkbox" id="logging-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </label>
+      <br><br>
+      <label>Theme:
+        <select id="theme-select">
+          <option value="default">Default</option>
+          <option value="dark">Dark</option>
+          <option value="neon">Neon</option>
+        </select>
+      </label>
+      <br><br>
+      <button id="fullscreen-toggle">Toggle Fullscreen</button>
+    </div>
+    <div id="workshop" class="cobalt-tab-content">
+      <p>Loading mods from GitHub...</p>
+    </div>
+  `;
+  document.documentElement.appendChild(sidebar);
+
+  sidebar.querySelectorAll('.cobalt-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      sidebar.querySelectorAll('.cobalt-tab').forEach(t => t.classList.remove('active'));
+      sidebar.querySelectorAll('.cobalt-tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      sidebar.querySelector(`#${tab.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  button.addEventListener('click', () => {
+    const isVisible = sidebar.classList.contains('visible');
+    const isFullscreen = sidebar.classList.contains('fullscreen');
+    sidebar.classList.remove('hidden-sidebar', 'hidden-fullscreen');
+    if (isVisible) {
+      sidebar.classList.remove('visible');
+      sidebar.classList.add(isFullscreen ? 'hidden-fullscreen' : 'hidden-sidebar');
+    } else {
+      sidebar.classList.add('visible');
+    }
+  });
+
+  document.getElementById('fullscreen-toggle').addEventListener('click', () => {
+    sidebar.classList.toggle('fullscreen');
+  });
+
+  let isDragging = false, offsetX = 0, offsetY = 0;
+  button.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    offsetX = e.clientX - button.getBoundingClientRect().left;
+    offsetY = e.clientY - button.getBoundingClientRect().top;
+    button.style.cursor = 'grabbing';
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      button.style.top = `${e.clientY - offsetY}px`;
+      button.style.left = `${e.clientX - offsetX}px`;
+      button.style.right = 'auto';
+    }
+  });
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    button.style.cursor = 'grab';
+  });
+  window.CobaltHash = {
+    mods: [],
+    config: {
+      enableLogging: true,
+      theme: 'default'
+    },
+    log: function(msg) {
+      if (this.config.enableLogging) console.log(`[CobaltHash] ${msg}`);
+    },
+    registerMod: function(mod) {
+      this.mods.push(mod);
+      this.renderMods();
+    },
+    renderMods: function() {
+      const container = document.getElementById('mods');
+      container.innerHTML = '';
+      this.mods.forEach((mod, index) => {
+        const card = document.createElement('div');
+        card.className = 'mod-card';
+        card.innerHTML = `
+          <strong>${mod.name}</strong><br>
+          <button onclick="CobaltHash.toggleMod(${index})">${mod.enabled ? 'Disable' : 'Enable'}</button>
+          <button onclick="CobaltHash.uninstallMod(${index})">Uninstall</button>
+        `;
+        container.appendChild(card);
+      });
+    },
+    toggleMod: function(index) {
+      const mod = this.mods[index];
+      mod.enabled = !mod.enabled;
+      if (mod.enabled && typeof mod.run === 'function') mod.run();
+      if (!mod.enabled && typeof mod.stop === 'function') mod.stop();
+      this.renderMods();
+    },
+    uninstallMod: function(index) {
+      this.mods.splice(index, 1);
+      this.renderMods();
+      const saved = this.mods.map(m => ({
+        name: m.name,
+        author: m.author,
+        description: m.description,
+        code: m.code
+      }));
+      localStorage.setItem('cobalt_mods', JSON.stringify(saved));
+    }
+  };
+
+  document.getElementById('logging-toggle').addEventListener('change', (e) => {
+    CobaltHash.config.enableLogging = e.target.checked;
+  });
+
+  document.getElementById('theme-select').addEventListener('change', (e) => {
+    sidebar.classList.remove('cobalt-theme-default', 'cobalt-theme-dark', 'cobalt-theme-neon');
+    sidebar.classList.add(`cobalt-theme-${e.target.value}`);
+    CobaltHash.config.theme = e.target.value;
+    CobaltHash.log(`Theme set to ${e.target.value}`);
+  });
+
+  // Load saved mods from localStorage
+  const savedMods = JSON.parse(localStorage.getItem('cobalt_mods') || '[]');
+  savedMods.forEach(mod => {
+    CobaltHash.registerMod({
+      name: mod.name,
+      author: mod.author,
+      description: mod.description,
+      code: mod.code,
+      enabled: false,
+      run: new Function(mod.code),
+      stop: () => {
+        const stopFn = window[mod.name + '_stop'];
+        if (typeof stopFn === 'function') stopFn();
+      }
+    });
+  });
+
+  // Load mods from GitHub Workshop
+  const workshopContainer = document.getElementById('workshop');
+  const repoUser = 'Awecraters';
+  const repoName = 'Cobalt-ModWorkshop';
+
+  fetch(`https://api.github.com/repos/${repoUser}/${repoName}/contents/mods`)
+    .then(res => res.json())
+    .then(files => {
+      workshopContainer.innerHTML = '';
+      files.forEach(file => {
+        if (!file.name.endsWith('.json')) return;
+        fetch(file.download_url)
+          .then(res => res.json())
+          .then(mod => {
+            const card = document.createElement('div');
+            card.className = 'mod-card';
+            card.innerHTML = `
+              <strong>${mod.name}</strong><br>
+              <em>by ${mod.author}</em><br>
+              <p>${mod.description || 'No description provided.'}</p>
+              <button>Install</button>
+            `;
+            card.querySelector('button').addEventListener('click', () => {
+              const mods = JSON.parse(localStorage.getItem('cobalt_mods') || '[]');
+              mods.push(mod);
+              localStorage.setItem('cobalt_mods', JSON.stringify(mods));
+              CobaltHash.registerMod({
+                name: mod.name,
+                author: mod.author,
+                description: mod.description,
+                code: mod.code,
+                enabled: false,
+                run: new Function(mod.code),
+                stop: () => {
+                  const stopFn = window[mod.name + '_stop'];
+                  if (typeof stopFn === 'function') stopFn();
+                }
+              });
+              CobaltHash.log(`Installed mod: ${mod.name}`);
+            });
+            workshopContainer.appendChild(card);
+          });
+      });
+    })
+    .catch(err => {
+      workshopContainer.innerHTML = '<p>Failed to load mods from GitHub.</p>';
+      console.error(err);
+    });
+})();
