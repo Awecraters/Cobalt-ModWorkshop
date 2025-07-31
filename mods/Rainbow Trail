@@ -1,0 +1,6 @@
+{
+  "name": "RainbowTrail",
+  "author": "Cobalt Official",
+  "description": "Adds a rainbow trail that follows your cursor.",
+  "code": "(function() {\n  const trail = [];\n  const colors = ['#ff0000','#ff7f00','#ffff00','#00ff00','#0000ff','#4b0082','#8f00ff'];\n  let colorIndex = 0;\n\n  function createDot(x, y) {\n    const dot = document.createElement('div');\n    dot.style.position = 'fixed';\n    dot.style.left = x + 'px';\n    dot.style.top = y + 'px';\n    dot.style.width = '8px';\n    dot.style.height = '8px';\n    dot.style.borderRadius = '50%';\n    dot.style.backgroundColor = colors[colorIndex];\n    dot.style.pointerEvents = 'none';\n    dot.style.zIndex = '999999';\n    document.body.appendChild(dot);\n    trail.push(dot);\n    colorIndex = (colorIndex + 1) % colors.length;\n    setTimeout(() => {\n      dot.remove();\n      trail.shift();\n    }, 1000);\n  }\n\n  function onMouseMove(e) {\n    createDot(e.clientX, e.clientY);\n  }\n\n  window.RainbowTrail_stop = function() {\n    document.removeEventListener('mousemove', onMouseMove);\n    trail.forEach(dot => dot.remove());\n    trail.length = 0;\n  };\n\n  document.addEventListener('mousemove', onMouseMove);\n})();"
+}
