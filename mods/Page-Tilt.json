@@ -1,0 +1,6 @@
+{
+  "name": "Page Tilt",
+  "author": "Cobalt Official",
+  "description": "Slightly tilts the entire page for a surreal visual effect.",
+  "code": "(function() {\n  document.body.style.transform = 'rotate(-1.5deg)';\n  document.body.style.transition = 'transform 0.5s ease';\n\n  window.PageTilt_stop = function() {\n    document.body.style.transform = '';\n  };\n})();"
+}
