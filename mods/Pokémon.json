@@ -1,0 +1,6 @@
+{
+  "name": "Cobaltmon",
+  "author": "Cobalt Official",
+  "description": "Turns the modloader tab into a Pokémon-style RPG.",
+  "code": "(function () {\n  const container = document.getElementById('cobalt-sidebar');\n  container.innerHTML = '';\n\n  const canvas = document.createElement('canvas');\n  canvas.width = 640;\n  canvas.height = 480;\n  canvas.style.border = '2px solid black';\n  container.appendChild(canvas);\n\n  const ctx = canvas.getContext('2d');\n  let x = 300, y = 220;\n\n  function draw() {\n    ctx.fillStyle = '#88c070';\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n\n    ctx.fillStyle = '#000';\n    ctx.fillRect(x, y, 32, 32);\n  }\n\n  function loop() {\n    draw();\n    requestAnimationFrame(loop);\n  }\n\n  document.addEventListener('keydown', e => {\n    if (e.key === 'ArrowUp') y -= 5;\n    if (e.key === 'ArrowDown') y += 5;\n    if (e.key === 'ArrowLeft') x -= 5;\n    if (e.key === 'ArrowRight') x += 5;\n  });\n\n  loop();\n})();"
+}
