@@ -1,6 +1,0 @@
-{
-  "name": "PokéPage",
-  "author": "Charles",
-  "description": "Replaces the entire page with a Pokémon-style RPG.",
-  "code": "(function () {\n  document.body.innerHTML = '';\n  document.body.style.margin = '0';\n  document.body.style.overflow = 'hidden';\n\n  const canvas = document.createElement('canvas');\n  canvas.width = window.innerWidth;\n  canvas.height = window.innerHeight;\n  canvas.style.display = 'block';\n  document.body.appendChild(canvas);\n\n  const ctx = canvas.getContext('2d');\n  let x = canvas.width / 2 - 16;\n  let y = canvas.height / 2 - 16;\n\n  function draw() {\n    ctx.fillStyle = '#a8d0a8';\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n\n    ctx.fillStyle = '#000';\n    ctx.fillRect(x, y, 32, 32);\n  }\n\n  function loop() {\n    draw();\n    requestAnimationFrame(loop);\n  }\n\n  document.addEventListener('keydown', e => {\n    if (e.key === 'ArrowUp') y -= 5;\n    if (e.key === 'ArrowDown') y += 5;\n    if (e.key === 'ArrowLeft') x -= 5;\n    if (e.key === 'ArrowRight') x += 5;\n  });\n\n  loop();\n})();"
-}
