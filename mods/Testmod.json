@@ -1,0 +1,6 @@
+{
+  "name": "Test",
+  "author": "Cobalt Account.Test",
+  "description": "Default.Description",
+  "code": "(function() {\n  if (window.confettiClickHandler) return;\n\n  window.confettiClickHandler = function(event) {\n    const confetti = document.createElement('div');\n    confetti.style.position = 'absolute';\n    confetti.style.left = `${event.clientX}px`;\n    confetti.style.top = `${event.clientY}px`;\n    confetti.style.width = '10px';\n    confetti.style.height = '10px';\n    confetti.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;\n    confetti.style.borderRadius = '50%';\n    confetti.style.zIndex = 9999;\n    confetti.style.pointerEvents = 'none';\n    document.body.appendChild(confetti);\n    setTimeout(() => confetti.remove(), 1000);\n  };\n\n  document.addEventListener('click', window.confettiClickHandler);\n})()"
+}
