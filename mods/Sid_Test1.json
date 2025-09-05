@@ -1,6 +1,0 @@
-{
-  "name": "Chicken Banana Launcher",
-  "author": "Charles",
-  "description": "Autoplays the Chicken Banana meme video on page load.",
-  "code": "(function () {\n  document.body.innerHTML = '';\n  document.body.style.margin = '0';\n  document.body.style.overflow = 'hidden';\n  document.body.style.backgroundColor = '#000';\n\n  const iframe = document.createElement('iframe');\n  iframe.width = '100%';\n  iframe.height = '100%';\n  iframe.src = 'https://www.youtube.com/embed/ig7EKb6BrQk?autoplay=1&controls=0&loop=1&playlist=ig7EKb6BrQk';\n  iframe.frameBorder = '0';\n  iframe.allow = 'autoplay; fullscreen';\n  iframe.allowFullscreen = true;\n  document.body.appendChild(iframe);\n})();"
-}
