@@ -1,0 +1,260 @@
+{
+  "name": "Account Manager",
+  "author": "Cobalt Official",
+  "description": "Adds account registration and login functionality to the modloader UI.",
+  "code": "(() => {
+  // 1) Inject all CSS (including forge background & overlay)
+  const style = document.createElement('style');
+  style.textContent = `
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: url('https://example.com/forge-bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #eee;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    #game {
+      position: relative;
+      display: flex;
+      gap: 20px;
+    }
+    #game::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      pointer-events: none;
+      z-index: 0;
+    }
+    #score {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      z-index: 1;
+    }
+    #board {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template: repeat(10, 50px) / repeat(10, 50px);
+      background: #444;
+      border: 4px solid #555;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .cell {
+      width: 50px;
+      height: 50px;
+      border: 1px solid #555;
+      position: relative;
+    }
+    .block {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(145deg, #888, #555);
+      border-radius: 4px;
+      box-shadow:
+        inset -2px -2px 6px rgba(0,0,0,0.5),
+        2px 2px 6px rgba(0,0,0,0.5);
+      transition: transform .3s ease, opacity .3s ease;
+      transform-origin: center center;
+      transform: scale(0);
+    }
+    #nextShapes {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .shape {
+      display: grid;
+      background: #333;
+      padding: 5px;
+      border: 2px solid #555;
+      border-radius: 6px;
+      cursor: grab;
+      touch-action: none;
+    }
+    .shape-cell {
+      width: 30px;
+      height: 30px;
+      margin: 2px;
+      background: linear-gradient(145deg, #888, #555);
+      border-radius: 3px;
+      box-shadow: inset -1px -1px 3px rgba(0,0,0,0.5);
+    }
+    .dragging {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.8;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // 2) Create score display
+  let score = 0;
+  const scoreDiv = document.createElement('div');
+  scoreDiv.id = 'score';
+  scoreDiv.textContent = 'Score: 0';
+  document.body.appendChild(scoreDiv);
+
+  // 3) Build game container
+  const gameDiv = document.createElement('div');
+  gameDiv.id = 'game';
+  document.body.appendChild(gameDiv);
+
+  // 4) Build 10×10 board
+  const width = 10, height = 10;
+  const boardDiv = document.createElement('div');
+  boardDiv.id = 'board';
+  gameDiv.appendChild(boardDiv);
+
+  const cells = [];
+  for (let i = 0; i < width * height; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.dataset.index = i;
+    boardDiv.appendChild(cell);
+    cells.push(cell);
+  }
+
+  function updateScore(delta) {
+    score += delta;
+    scoreDiv.textContent = 'Score: ' + score;
+  }
+
+  // 5) Next‐shape panel & definitions
+  const nextShapesDiv = document.createElement('div');
+  nextShapesDiv.id = 'nextShapes';
+  gameDiv.appendChild(nextShapesDiv);
+
+  // Block shapes (arrays of [row][col])
+  const shapes = [
+    [[0],[0],[0],[0]],           // vertical bar
+    [[0,0,0],[0,0,0]],           // square 3×2
+    [[0,0],[0,0]],               // square 2×2
+    [[0,0,0]],                   // horizontal 3
+    [[0],[0]],                   // vertical 2
+    [[0,0,0,0]],                 // horizontal 4
+    [[0],[0],[0]]                // vertical 3
+  ];
+
+  function clearNext() {
+    nextShapesDiv.innerHTML = '';
+  }
+
+  function spawnShapes() {
+    clearNext();
+    shapes.forEach(shapeArr => {
+      // Create one draggable shape
+      const shapeDiv = document.createElement('div');
+      shapeDiv.className = 'shape';
+      shapeDiv.style.gridTemplate = 
+        `repeat(${shapeArr.length}, 30px) / repeat(${shapeArr[0].length}, 30px)`;
+
+      // Populate its cells
+      shapeArr.forEach((row, r) => {
+        row.forEach((_, c) => {
+          const sc = document.createElement('div');
+          sc.className = 'shape-cell';
+          sc.dataset.r = r;
+          sc.dataset.c = c;
+          shapeDiv.appendChild(sc);
+        });
+      });
+
+      // Pointer‐down starts dragging
+      shapeDiv.addEventListener('pointerdown', e => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+
+        // Capture block offsets
+        const blocks = Array.from(shapeDiv.children).map(cell => ({
+          r: parseInt(cell.dataset.r, 10),
+          c: parseInt(cell.dataset.c, 10)
+        }));
+        startDrag(e, blocks);
+      });
+
+      nextShapesDiv.appendChild(shapeDiv);
+    });
+  }
+
+  function startDrag(startEvent, blocks) {
+    // Clone as ghost
+    const ghost = startEvent.target.cloneNode(true);
+    ghost.classList.add('dragging');
+    document.body.appendChild(ghost);
+
+    // Initial position
+    const offsetX = startEvent.clientX - startEvent.target.getBoundingClientRect().left;
+    const offsetY = startEvent.clientY - startEvent.target.getBoundingClientRect().top;
+    ghost.style.left = `${startEvent.clientX - offsetX}px`;
+    ghost.style.top  = `${startEvent.clientY - offsetY}px`;
+
+    function onMove(ev) {
+      ghost.style.left = `${ev.clientX - offsetX}px`;
+      ghost.style.top  = `${ev.clientY - offsetY}px`;
+    }
+
+    function onUp(ev) {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      ghost.remove();
+
+      // Compute board‐grid drop coordinates
+      const bx = Math.floor((ev.clientX - boardDiv.getBoundingClientRect().left) / 50);
+      const by = Math.floor((ev.clientY - boardDiv.getBoundingClientRect().top) / 50);
+
+      if (canPlace(bx, by, blocks)) {
+        placeShape(bx, by, blocks);
+        updateScore(blocks.length);
+        spawnShapes();
+      }
+    }
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp, { once: true });
+  }
+
+  function canPlace(x, y, blocks) {
+    return blocks.every(({ r, c }) => {
+      const tx = x + c, ty = y + r;
+      return (
+        tx >= 0 &&
+        tx < width &&
+        ty >= 0 &&
+        ty < height &&
+        !cells[ty * width + tx].firstChild
+      );
+    });
+  }
+
+  function placeShape(x, y, blocks) {
+    blocks.forEach(({ r, c }) => {
+      const idx = (y + r) * width + (x + c);
+      const cell = cells[idx];
+      const block = document.createElement('div');
+      block.className = 'block';
+      cell.appendChild(block);
+      // Animate in
+      requestAnimationFrame(() => {
+        block.style.transform = 'scale(1)';
+      });
+    });
+  }
+
+  // Kick it off
+  spawnShapes();
+})();"
+}
