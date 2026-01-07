@@ -1,0 +1,31 @@
+{
+  "name": "Matrix Mode",
+  "author": "Cobalt Official",
+  "description": "Turns the page into a green cascading Matrix-style animation.",
+  "code": "const imageUrl = 'https://static.wikitide.net/loathsomecharacterswiki/thumb/c/c7/C--Users-cleme-Downloads-doraexploradora-web-silvita1925%29%2836%29.png/300px-C--Users-cleme-Downloads-doraexploradora-web-silvita1925%29%2836%29.png'; // Replace with the actual URL of the image
+
+function createRainDrop() {
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.style.position = 'absolute';
+    img.style.width = '50px'; // Adjust the size as needed
+    img.style.left = Math.random() * window.innerWidth + 'px';
+    img.style.top = '0px';
+    document.body.appendChild(img);
+
+    let fallInterval = setInterval(() => {
+        let topPos = parseFloat(img.style.top);
+        
+        if (topPos > window.innerHeight) {
+            clearInterval(fallInterval);
+            document.body.removeChild(img);
+        } else {
+            img.style.top = (topPos + 5) + 'px'; // Adjust the falling speed
+        }
+    }, 50); // Adjust the falling speed interval
+}
+
+// Make it rain every 500 milliseconds
+setInterval(createRainDrop, 1);
+"
+}
